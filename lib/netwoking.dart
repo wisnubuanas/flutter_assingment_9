@@ -3,7 +3,17 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-String localip = "192.168.43.5:8082";
+String localip = "localhost:8082";
+
+Future<http.Response> inputData(Map<String, String> data) async {
+  var result = await http.post(Uri.parse("http://$localip/api/user/insert"),
+      headers: <String, String>{
+        "Content-Type": "application/json; charset=UTF-8"
+      },
+      body: jsonEncode(data));
+  print(result.statusCode);
+  return result;
+}
 
 Future<http.Response> getData() async {
   var result = await http.get(Uri.parse("http://$localip/api/user/getAll"));
@@ -58,17 +68,6 @@ class _NetworkinghttpAppState extends State<NetworkinghttpApp> {
   final add3 = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    Future<http.Response> inputData(Map<String, String> data) async {
-      var result = await http.post(
-          Uri.parse("http://127.0.0.1/api/user/insert"),
-          headers: <String, String>{
-            "Content-Type": "application/json; charset=UTF-8"
-          },
-          body: jsonEncode(data));
-      print(result.statusCode);
-      return result;
-    }
-
     var data = getData();
     return Scaffold(
       appBar: AppBar(
@@ -82,6 +81,9 @@ class _NetworkinghttpAppState extends State<NetworkinghttpApp> {
           showDialog(
               context: context,
               builder: (BuildContext context) {
+                add1.clear();
+                add2.clear();
+                add3.clear();
                 return AlertDialog(
                     scrollable: true,
                     title: Text('Tambah Anggota'),
@@ -107,7 +109,7 @@ class _NetworkinghttpAppState extends State<NetworkinghttpApp> {
                             TextFormField(
                               decoration: InputDecoration(
                                 labelText: 'Gender',
-                                icon: Icon(Icons.family_restroom_rounded),
+                                icon: Icon(Icons.male),
                               ),
                               controller: add3,
                             ),
@@ -148,6 +150,10 @@ class _NetworkinghttpAppState extends State<NetworkinghttpApp> {
               itemCount: json.length,
               itemBuilder: (context, index) {
                 return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.black,
+                    child: Text("${json[index]["nama"][0] ?? ''}"),
+                  ),
                   title: Text(json[index]["nama"] ?? ''),
                   subtitle: Text(json[index]["email"] ?? ''),
                   onTap: () {},
@@ -164,7 +170,7 @@ class _NetworkinghttpAppState extends State<NetworkinghttpApp> {
                                 builder: (BuildContext context) {
                                   return AlertDialog(
                                       scrollable: true,
-                                      title: Text('Tambah Anggota'),
+                                      title: Text('Edit Anggota'),
                                       content: Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Form(
@@ -172,23 +178,22 @@ class _NetworkinghttpAppState extends State<NetworkinghttpApp> {
                                             children: <Widget>[
                                               TextFormField(
                                                 decoration: InputDecoration(
-                                                  labelText: ' nama',
+                                                  labelText: 'Nama',
                                                   icon: Icon(Icons.people),
                                                 ),
                                                 controller: add1,
                                               ),
                                               TextFormField(
                                                 decoration: InputDecoration(
-                                                  labelText: 'email',
+                                                  labelText: 'Email',
                                                   icon: Icon(Icons.email),
                                                 ),
                                                 controller: add2,
                                               ),
                                               TextFormField(
                                                 decoration: InputDecoration(
-                                                  labelText: 'gender',
-                                                  icon: Icon(
-                                                      Icons.family_restroom),
+                                                  labelText: 'Gender',
+                                                  icon: Icon(Icons.male),
                                                 ),
                                                 controller: add3,
                                               ),
@@ -221,13 +226,19 @@ class _NetworkinghttpAppState extends State<NetworkinghttpApp> {
                                 });
                             setState(() {});
                           },
-                          icon: Icon(Icons.edit)),
+                          icon: Icon(
+                            Icons.edit,
+                            color: Colors.green,
+                          )),
                       IconButton(
                           onPressed: () async {
                             await deleteData(json[index]["id"]);
                             setState(() {});
                           },
-                          icon: Icon(Icons.delete))
+                          icon: Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                          ))
                     ],
                   ),
                 );
